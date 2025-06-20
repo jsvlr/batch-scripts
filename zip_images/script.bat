@@ -1,8 +1,10 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: Show directories in the user's profile folder
-dir "%USERPROFILE%"
+:: Show all directories in the user's profile folder
+:: /A for hidden files
+:: /B for simplified listing (only file name)
+dir /A /B "%USERPROFILE%"
 
 :start
 set /p "target_folder=Enter the name of the folder to zip (use 'e' to exit): "
@@ -29,8 +31,7 @@ if not exist "%target_dir%" (
 echo Zipping files from %target_dir% please wait...
 
 :: Zip all images on that folder
-powershell -nologo -noprofile -command ^
-powershell "Compress-Archive -Path (Get-ChildItem -Path '%target_dir%' -Include *.png, *.jpeg, *.jpg, *.jfif -Recurse | Select-Object -ExpandProperty Fullname) -DestinationPath '%CD%\%zip_file_name%'"
+powershell -nologo -noprofile -command ^ "Get-ChildItem -Path '%target_dir%' -Include *.png,*.jpeg,*.jpg,*.jfif -Recurse | Compress-Archive -DestinationPath '%CD%\%zip_file_name%'"
 
 :: Log the operation
 echo !datetime! Zipped files from %target_dir% >> log.txt
