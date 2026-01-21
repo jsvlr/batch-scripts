@@ -2,8 +2,6 @@
 setlocal enabledelayedexpansion
 
 :: Show all directories in the user's profile folder
-:: /A for hidden files
-:: /B for simplified listing (only file name)
 dir /A /B "%USERPROFILE%"
 
 :start
@@ -14,11 +12,12 @@ if /i "%target_folder%" == "e" goto end
 set "target_dir=%USERPROFILE%\%target_folder%"
 
 :: Create a timestamp
-for /f "tokens=2 delims==" %%t in ('wmic os get localdatetime /value') do set datetime=%%t
-set datetime=!datetime:~0,4!-!datetime:~4,2!-!datetime:~6,2!-!datetime:~8,4!
+for /f "tokens=2-4 delims=/ " %%a in ('date /t') do set date_part=%%c-%%a-%%b
+for /f "tokens=1-2 delims=/: " %%a in ('time /t') do set time_part=%%a%%b
+set datetime=!date_part!-!time_part!
 
 :: Clean filename (replace spaces in username with underscore)
-set "zip_file_name=%USERNAME: =_%_%target_folder%-!datetime!.zip"
+set "zip_file_name=%USERNAME: =_%-%target_folder%-%datetime%.zip"
 
 :: Remove previous zip file (optional)
 if exist "%CD%\%zip_file_name%" del /q "%zip_file_name%"
@@ -28,7 +27,7 @@ if not exist "%target_dir%" (
    goto start
 )
 
-echo Zipping files from %target_dir% please wait...
+echo Zipping files from %target_dir% to %CD%\%zip_file_name% please wait...
 
 :: Zip all images on that folder
 powershell -nologo -noprofile -command ^ "Get-ChildItem -Path '%target_dir%' -Include *.png,*.jpeg,*.jpg,*.jfif -Recurse | Compress-Archive -DestinationPath '%CD%\%zip_file_name%'"
@@ -39,4 +38,4 @@ echo !datetime! Zipped files from %target_dir% >> log.txt
 :end
 echo You exit the script
 pause
-exit
+:: exit
